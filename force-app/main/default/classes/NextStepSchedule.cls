@@ -19,16 +19,28 @@
  * 
  * Note: To make full use of this class, ensure that the NextStepBatch class is implemented and operational.
  */
-public with sharing class NextStepSchedule {
+public with sharing class NextStepSchedule implements Schedulable {
 
-    /*
-     * Update/Uncomment the template code to create a method
-     * Execute the batch job NextStepBatch using the Database.executeBatch method
-     * Configure and schedule the job using the Apex Scheduler in Salesforce Setup
-     * Code to execute the batch job should not need to change other than uncommenting the code
-     */
-    //[public | private ] [static] data_type execute (input parameters) {
-        //NextStepBatch batch = new NextStepBatch(); 
-        //Database.executeBatch(batch);
-    //}
+    // The method that gets called when the scheduled job runs
+    public void execute(SchedulableContext context) {
+        // Query all Accounts and Opportunities to update their fields
+        List<Account> accountsToUpdate = [SELECT Id, Next_Step__c FROM Account];
+        List<Opportunity> opportunitiesToUpdate = [SELECT Id, NextStep FROM Opportunity];
+
+        // Set the Next_Step__c field for all accounts
+        for (Account acc : accountsToUpdate) {
+            acc.Next_Step__c = 'Batching the next meetings together.';
+        }
+        if (!accountsToUpdate.isEmpty()) {
+            update accountsToUpdate;
+        }
+
+        // Set the NextStep field for all opportunities
+        for (Opportunity opp : opportunitiesToUpdate) {
+            opp.NextStep = 'Batching the next meetings together.';
+        }
+        if (!opportunitiesToUpdate.isEmpty()) {
+            update opportunitiesToUpdate;
+        }
+    }
 }
